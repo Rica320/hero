@@ -47,20 +47,16 @@ public class Arena {
         KeyType kT = key.getKeyType();
         switch (kT) {
             case ArrowUp:
-                System.out.println(key);
                 moveHero(hero.moveUp());
                 break;
             case ArrowDown:
-                System.out.println(key);
                 moveHero(hero.moveDown());
                 break;
             case ArrowRight:
-                System.out.println(key);
                 moveHero(hero.moveRight());
                 break;
             case ArrowLeft:
                 moveHero(hero.moveLeft());
-                System.out.println(key);
                 break;
         }
 
@@ -80,15 +76,10 @@ public class Arena {
     }
 
     public boolean canHeroMove(Position position) { // TODO: SEE IF IT IS RIGHT
-        if(position.getX() < width && position.getX() >= 0 && position.getY() < height && position.getY() >= 0)
-            return true;
-        else
-            return false;
-
-        /*
-        if (wall.getPosition().equals(position))
-            return false;
-        else
-            return true;*/
+        for (Wall wall : walls) {
+            if (wall.getPosition().equals(position))
+                return false;
+        }
+        return true;
     }
 }
