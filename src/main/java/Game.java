@@ -37,19 +37,24 @@ public class Game {
         screen.refresh();
     }
 
-    public void run() throws IOException {
+    public void run() throws IOException, GameOverException {
         while (true) {
-            draw();
-            KeyStroke key = screen.readInput();
-            processKey(key);
+            try {
+                draw();
+                KeyStroke key = screen.readInput();
+                processKey(key);
 
-            if (key.getKeyType() == KeyType.EOF) {
-                break;
+                if (key.getKeyType() == KeyType.EOF) {
+                    break;
+                }
+            }catch (GameOverException e) {
+                screen.close();
+                throw e; // let's let the app finish it
             }
         }
     }
 
-    private void processKey(KeyStroke key) throws IOException {
+    private void processKey(KeyStroke key) throws IOException, GameOverException {
         arena.processKey(key);
         if ((key.getKeyType() == KeyType.Character) && key.getCharacter() == 'q') {
             screen.close();
