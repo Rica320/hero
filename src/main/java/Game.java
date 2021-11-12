@@ -1,6 +1,4 @@
 import com.googlecode.lanterna.TerminalSize;
-import com.googlecode.lanterna.TextCharacter;
-import com.googlecode.lanterna.graphics.TextGraphics;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.screen.Screen;
@@ -9,8 +7,6 @@ import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.Terminal;
 
 import java.io.IOException;
-
-import static com.googlecode.lanterna.input.KeyType.*;
 
 public class Game {
     Screen screen;
@@ -56,7 +52,7 @@ public class Game {
 
     private void processKey(KeyStroke key) throws IOException, GameOverException {
         arena.processKey(key);
-        if ((key.getKeyType() == KeyType.Character) && key.getCharacter() == 'q') {
+        if ((key.getKeyType() == KeyType.Character) && key.getCharacter() == 'q') { // TODO: MAYBE CHANGE THIS AND PUT AN EXCEPTION
             screen.close();
         }
     }
