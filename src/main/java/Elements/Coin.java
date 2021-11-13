@@ -1,3 +1,5 @@
+package Elements;
+
 import com.googlecode.lanterna.SGR;
 import com.googlecode.lanterna.TerminalPosition;
 import com.googlecode.lanterna.TextColor;
@@ -5,15 +7,19 @@ import com.googlecode.lanterna.graphics.TextGraphics;
 
 public class Coin extends Element{
 
-    public Coin(int x, int y) {
+    Coin(int x, int y) {
         super(x, y);
+        color = "#FFFF33";
     }
 
     @Override
     public void draw(TextGraphics graphics) {
-        graphics.setForegroundColor(TextColor.Factory.fromString("#FFFF33"));
+        graphics.setForegroundColor(TextColor.Factory.fromString(color));
         graphics.enableModifiers(SGR.ITALIC);
+        graphics.enableModifiers(SGR.BLINK);
         graphics.putString(new TerminalPosition(position.getX(), position.getY()), "O");
+        graphics.disableModifiers(SGR.ITALIC);
+        graphics.disableModifiers(SGR.BLINK);
     }
 
     @Override

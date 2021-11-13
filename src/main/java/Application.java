@@ -1,3 +1,6 @@
+import Exceptions.GameOverException;
+import Exceptions.GameWonException;
+
 import java.io.IOException;
 
 public class Application {
@@ -5,7 +8,7 @@ public class Application {
         try {
             Game game = new Game();
             game.run();
-        } catch (IOException | GameOverException e) {
+        } catch (IOException | GameOverException | GameWonException e) {
             e.printStackTrace();
         }
     }

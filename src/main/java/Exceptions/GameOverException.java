@@ -1,5 +1,7 @@
+package Exceptions;
+
 public class GameOverException extends Exception{
-    GameOverException() {
+    public GameOverException() {
         super();
     }
 

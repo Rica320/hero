@@ -1,7 +1,10 @@
+package Elements;
+
 import com.googlecode.lanterna.graphics.TextGraphics;
 
 abstract public class Element {
     protected Position position;
+    protected String color = "#FFFFFF";
 
     Element(int x, int y) {
         this.position = new Position(x,y);

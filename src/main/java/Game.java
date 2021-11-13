@@ -1,3 +1,6 @@
+import Elements.Arena;
+import Exceptions.GameOverException;
+import Exceptions.GameWonException;
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
@@ -33,7 +36,7 @@ public class Game {
         screen.refresh();
     }
 
-    public void run() throws IOException, GameOverException {
+    public void run() throws IOException, GameOverException, GameWonException {
         while (true) {
             try {
                 draw();
@@ -43,14 +46,14 @@ public class Game {
                 if (key.getKeyType() == KeyType.EOF) {
                     break;
                 }
-            }catch (GameOverException e) {
+            }catch (GameOverException | GameWonException e) {
                 screen.close();
                 throw e; // let's let the app finish it
             }
         }
     }
 
-    private void processKey(KeyStroke key) throws IOException, GameOverException {
+    private void processKey(KeyStroke key) throws IOException, GameOverException, GameWonException {
         arena.processKey(key);
         if ((key.getKeyType() == KeyType.Character) && key.getCharacter() == 'q') { // TODO: MAYBE CHANGE THIS AND PUT AN EXCEPTION
             screen.close();

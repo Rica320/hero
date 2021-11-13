@@ -1,12 +1,17 @@
+package Elements;
+
 import com.googlecode.lanterna.SGR;
 import com.googlecode.lanterna.TerminalPosition;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.graphics.TextGraphics;
 
 public class Hero extends Element{
+    private int energy = 100;
+
     Hero(int x, int y) {
         super(x,y);
     }
+
     public Position moveUp() {
         return new Position(position.getX(), position.getY() - 1);
     }
@@ -23,5 +28,14 @@ public class Hero extends Element{
         graphics.setForegroundColor(TextColor.Factory.fromString("#DC143C"));
         graphics.enableModifiers(SGR.BOLD);
         graphics.putString(new TerminalPosition(position.getX(), position.getY()), "X");
+        graphics.disableModifiers(SGR.BOLD);
+    }
+
+    public int getEnergy() {
+        return energy;
+    }
+
+    public void setEnergy(int energy) {
+        this.energy = energy;
     }
 }

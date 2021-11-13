@@ -1,3 +1,7 @@
+package Elements;
+
+import Exceptions.GameOverException;
+import Exceptions.GameWonException;
 import com.googlecode.lanterna.TerminalPosition;
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextColor;
@@ -19,7 +23,7 @@ public class Arena {
     private final List<Monster> monsters;
 
 
-    Arena(int width, int height) {
+    public Arena(int width, int height) {
         this.height = height;
         this.width = width;
 
@@ -53,11 +57,9 @@ public class Arena {
             Position pos = new Position(random.nextInt(width - 2) + 1, random.nextInt(height - 2) + 1);
             if (pos.equals(hero.position)) {
                 i--;
-                System.out.println("IT WORKSSSS!!!!!!!");
                 continue;
             } else if (coins.contains(new Coin(pos.getX(), pos.getY()))) {
                 i--;
-                System.out.println("IT WORKSSSS!!!!!!!");
                 continue;
             }
             coins.add(new Coin(pos.getX(), pos.getY()));
@@ -66,17 +68,21 @@ public class Arena {
     }
 
     private List<Monster> createMonster() {
-        Random random = new Random();
+        Random random = new Random(System.currentTimeMillis());
         ArrayList<Monster> monsters = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             Position pos = new Position(random.nextInt(width - 2) + 1, random.nextInt(height - 2) + 1);
             if (pos.equals(hero.position)) {
                 i--;
-                System.out.println("IT WORKSSSS!!!!!!!");
                 continue;
             }
-            monsters.add(new Monster(pos.getX(), pos.getY()));
+            if (i == 4)
+                monsters.add(new BigBossMonster(pos.getX(), pos.getY()));
+            else
+                monsters.add(new Monster(pos.getX(), pos.getY()));
         }
+
+
         return monsters;
     }
 
@@ -84,17 +90,24 @@ public class Arena {
         coins.removeIf(coin -> coin.position.equals(hero.position));
     }
 
-    public void processKey(KeyStroke key) throws GameOverException {
+    public void processKey(KeyStroke key) throws GameOverException, GameWonException {
         KeyType kT = key.getKeyType();
+
         switch (kT) {
             case ArrowUp -> moveHero(hero.moveUp());
             case ArrowDown -> moveHero(hero.moveDown());
             case ArrowRight -> moveHero(hero.moveRight());
             case ArrowLeft -> moveHero(hero.moveLeft());
         }
+
         verifyMonsterCollisions();
+        verifyWin();
         moveMonsters();
         verifyMonsterCollisions(); // it is maybe better to check the collision inside the move monster !?
+
+        /**
+         * NOTE: the damage will be taken twice by a monster if we move against him
+         */
     }
 
     public void draw(TextGraphics graphics) {
@@ -122,12 +135,32 @@ public class Arena {
 
     public void moveMonsters() {
         for (Monster monster : monsters) {
+            if (monster.getClass() == BigBossMonster.class)
+                ((BigBossMonster) monster).setTargetPos(hero.position);
+
             // TODO: check if the monster is inside the arena after move
-            monster.getPosition().add(monster.move());
+            Position pos;
+            pos = monster.move();
+            if (isMonsterInPos(new Position(pos.getX() + monster.getPosition().getX(),
+                                             pos.getY() + monster.getPosition().getY()))) {
+                pos.setX(0);
+                pos.setY(0); // respect social distance
+            }
+            else if (!canMonsterMove(new Position(pos.getX() + monster.getPosition().getX(),
+                                                  pos.getY() + monster.getPosition().getY()))) // monster should not runway from the arena
+            {
+                if (monster.getPosition().getX() == 1 || monster.getPosition().getX() == width-2)
+                    pos.setX(0);
+
+                if (monster.getPosition().getY() == 1 || monster.getPosition().getY() == height-2)
+                    pos.setY(0);
+            }
+
+            monster.getPosition().add(pos);
         }
     }
 
-    public boolean canHeroMove(Position position) { // TODO: SEE IF IT IS RIGHT
+    public boolean canHeroMove(Position position) {
         for (Wall wall : walls) {
             if (wall.getPosition().equals(position))
                 return false;
@@ -135,12 +168,41 @@ public class Arena {
         return true;
     }
 
+    public boolean canMonsterMove(Position position) { // TODO: Maybe using exceptions would make the 2 functions more clear
+        for (Wall wall : walls) {
+            if (wall.getPosition().equals(position))
+                return false;
+        }
+        return true;
+    }
+
+    public boolean isMonsterInPos(Position position) {
+       for (Monster monster: monsters) {
+           if (monster.getPosition().equals(position)) {
+               return true; // Personal space is important even for monsters
+           }
+       }
+       return false;
+
+    }
+
     public void verifyMonsterCollisions() throws GameOverException {
+        ArrayList<Monster> toRemove = new ArrayList<>();
         for (Monster monster : monsters) {
             if (monster.getPosition().equals(hero.position)) {
-                throw new GameOverException();
+                int newEnergy = hero.getEnergy()-monster.getDamage();
+                hero.setEnergy(newEnergy);
+                toRemove.add(monster);
+                if (hero.getEnergy() <= 0)
+                    throw new GameOverException();
             }
         }
+        monsters.removeAll(toRemove); // the hero beats the crap out of the monsters, if alive
+    }
+
+    public void verifyWin() throws GameWonException {
+        if (coins.isEmpty())
+            throw new GameWonException(hero.getEnergy());
     }
 
 }
