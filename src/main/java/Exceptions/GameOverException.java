@@ -6,7 +6,12 @@ public class GameOverException extends Exception{
     }
 
     @Override
-    public void printStackTrace() {
+    public void printStackTrace() { // this isn't probably the adequate function
         System.out.println("NOOO!! You lost!!");
+    }
+
+    @Override
+    public String getMessage() {
+        return "NOOO!! You lost!!";
     }
 }

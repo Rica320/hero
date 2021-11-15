@@ -25,10 +25,7 @@ public class Monster extends Element{
 
     public Position move() {
         Random random = new Random(System.currentTimeMillis());
-        Position dPos = new Position(random.nextInt(3) -1, random.nextInt(3) -1);
-
-        // if (getPosition().getX() + dPos.getX() < 1 || getPosition().getX() + dPos.getX() >)
-        return dPos;
+        return new Position(random.nextInt(3) -1, random.nextInt(3) -1);
     }
 
     public int getDamage() {

@@ -1,5 +1,6 @@
 package Elements;
 
+import Exceptions.ExitArenaException;
 import Exceptions.GameOverException;
 import Exceptions.GameWonException;
 import com.googlecode.lanterna.TerminalPosition;
@@ -14,14 +15,14 @@ import java.util.List;
 import java.util.Random;
 
 public class Arena {
-    private final int width;
-    private final int height;
+    protected final int width;
+    protected final int height;
 
     Hero hero;
-    private final List<Wall> walls;
-    private final List<Coin> coins;
-    private final List<Monster> monsters;
-
+    protected List<Wall> walls;
+    protected List<Coin> coins;
+    protected List<Monster> monsters;
+    protected Door door;
 
     public Arena(int width, int height) {
         this.height = height;
@@ -31,10 +32,11 @@ public class Arena {
         this.walls = createWalls();
         this.coins = createCoins();
         this.monsters = createMonster();
+        this.door = createDoor();
 
     }
 
-    private List<Wall> createWalls() {
+    protected List<Wall> createWalls() {
         List<Wall> walls = new ArrayList<>();
 
         for (int c = 0; c < width; c++) {
@@ -50,11 +52,15 @@ public class Arena {
         return walls;
     }
 
-    private List<Coin> createCoins() {
+    protected List<Coin> createCoins() { // TODO: CHECK IF COINS SPOON ON A WALL(final arena) !!! IGNORE FOR NOW
         Random random = new Random();
         ArrayList<Coin> coins = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             Position pos = new Position(random.nextInt(width - 2) + 1, random.nextInt(height - 2) + 1);
+            if (walls.contains(new Wall(pos.getX(), pos.getY()))) {
+                i--;
+                continue;
+            }
             if (pos.equals(hero.position)) {
                 i--;
                 continue;
@@ -67,12 +73,16 @@ public class Arena {
         return coins;
     }
 
-    private List<Monster> createMonster() {
+    protected List<Monster> createMonster() {
         Random random = new Random(System.currentTimeMillis());
         ArrayList<Monster> monsters = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             Position pos = new Position(random.nextInt(width - 2) + 1, random.nextInt(height - 2) + 1);
             if (pos.equals(hero.position)) {
+                i--;
+                continue;
+            }
+            else if (monsters.contains(new Monster(pos.getX(), pos.getY()))) {
                 i--;
                 continue;
             }
@@ -86,11 +96,21 @@ public class Arena {
         return monsters;
     }
 
+    protected Door createDoor() {
+        Random random = new Random(System.currentTimeMillis());// curiosity: it will always spoon on the first place of one monster
+        return new Door(random.nextInt(width - 2) + 1, random.nextInt(height - 2) + 1); // just don't mind about the position
+    }
+
     private void retrieveCoins() {
         coins.removeIf(coin -> coin.position.equals(hero.position));
     }
 
-    public void processKey(KeyStroke key) throws GameOverException, GameWonException {
+    private void openDoor() {
+        if (coins.isEmpty() && hero.getPosition().equals(door.getPosition()))
+            door.setOpen(true);
+    }
+
+    public void processKey(KeyStroke key) throws GameOverException, GameWonException , ExitArenaException {
         KeyType kT = key.getKeyType();
 
         switch (kT) {
@@ -103,11 +123,8 @@ public class Arena {
         verifyMonsterCollisions();
         verifyWin();
         moveMonsters();
-        verifyMonsterCollisions(); // it is maybe better to check the collision inside the move monster !?
+        verifyMonsterCollisions();
 
-        /**
-         * NOTE: the damage will be taken twice by a monster if we move against him
-         */
     }
 
     public void draw(TextGraphics graphics) {
@@ -124,12 +141,16 @@ public class Arena {
         for (Monster monster : monsters) {
             monster.draw(graphics);
         }
+
+        if (coins.isEmpty())
+            door.draw(graphics);
     }
 
     public void moveHero(Position position) {
         if (canHeroMove(position)) {
             hero.setPosition(position);
             retrieveCoins();
+            openDoor();
         }
     }
 
@@ -168,7 +189,7 @@ public class Arena {
         return true;
     }
 
-    public boolean canMonsterMove(Position position) { // TODO: Maybe using exceptions would make the 2 functions more clear
+    public boolean canMonsterMove(Position position) {
         for (Wall wall : walls) {
             if (wall.getPosition().equals(position))
                 return false;
@@ -200,9 +221,9 @@ public class Arena {
         monsters.removeAll(toRemove); // the hero beats the crap out of the monsters, if alive
     }
 
-    public void verifyWin() throws GameWonException {
-        if (coins.isEmpty())
-            throw new GameWonException(hero.getEnergy());
+    public void verifyWin() throws ExitArenaException, GameWonException {
+        if (coins.isEmpty() && door.isOpen())
+            throw new ExitArenaException();
     }
 
 }

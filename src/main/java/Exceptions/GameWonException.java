@@ -12,4 +12,9 @@ public class GameWonException extends Exception{
         System.out.println("You WON!!");
         System.out.println("your energy: " + energyLeft);
     }
+
+    @Override
+    public String getMessage() {
+        return "You WON!! With " + energyLeft + " of Energy";
+    }
 }
